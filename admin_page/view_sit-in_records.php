@@ -32,6 +32,21 @@ while ($row = $result->fetch_assoc()) {
     $reservations[] = $row;
 }
 
+// Generate data for the Pie Chart (Lab Counts)
+$labCounts = [];
+foreach ($reservations as $reservation) {
+    $lab = $reservation['lab'];
+    if (isset($labCounts[$lab])) {
+        $labCounts[$lab]++;
+    } else {
+        $labCounts[$lab] = 1;
+    }
+}
+
+// Prepare data for the pie chart
+$labels = json_encode(array_keys($labCounts));
+$values = json_encode(array_values($labCounts));
+
 $conn->close();
 ?>
 
@@ -60,6 +75,8 @@ $conn->close();
     .download-buttons {margin-bottom: 20px;}
     .download-buttons button {padding: 10px 15px;margin-right: 10px;background-color: #333;color: white;border: none;cursor: pointer;border-radius: 5px; }
     .download-buttons button:hover {background-color: #0056b3;}
+    .chart-container { max-width: 600px; margin: 20px auto; }
+
   </style>
 </head>
 <body>
@@ -83,17 +100,76 @@ $conn->close();
     <div class="main-content">
       <header>
         <h1>Welcome, <?php echo htmlspecialchars($studentData['username']); ?></h1>
-        <p>Generate Reports</p>
-      </header>        
+        <p>Sit-in Records</p>
+      </header>
+      <div style ="display:flex;justify-content:space-between;width:500;height:500">        
+        <div class="chart-container">
+            <canvas id="pieChart" ></canvas>
+          </div>
+        <div class="chart-container">
+        <canvas id="labChart"></canvas>
+        </div>
+      </div>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+      <script>
+        // Get data for the pie chart
+        var labLabels = <?php echo $labels; ?>;
+        var labValues = <?php echo $values; ?>;
+
+        // Create the pie chart
+        var ctx = document.getElementById('labChart').getContext('2d');
+        var labChart = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: labLabels, // Dynamic labels (lab names)
+                datasets: [{
+                    label: 'Labs Used',
+                    data: labValues, // Dynamic data (lab counts)
+                    backgroundColor: ['#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#ff9f40', '#ffcd56'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            fetch('get_reservation_counts.php')
+                .then(response => response.json())
+                .then(data => {
+                    // Define labels and colors
+                    const labels = Object.keys(data);
+                    const values = Object.values(data);
+                    const colors = ['red', 'yellow', 'pink', 'blue', 'green', 'orange']; // Adjust as needed
+
+                    // Get chart context
+                    var ctx = document.getElementById('pieChart').getContext('2d');
+                    // Create Pie Chart
+                    new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: values,
+                                backgroundColor: colors
+                            }]
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching reservation counts:', error));
+        });
+      </script>
 
       
       <div class="search-bar">
-        <div class="download-buttons">
+        <!-- <div class="download-buttons">
         <button onclick="downloadCSV()">Download CSV</button>
         <button onclick="downloadExcel()">Download Excel</button>
         <button onclick="downloadPDF()">Download PDF</button>
         <button onclick="printTable()">Print</button>
-      </div>
+        </div> -->
         <input type="text" id="search-id" placeholder="Search by ID Number...">
       </div>
       
@@ -189,6 +265,7 @@ $conn->close();
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.5/vfs_fonts.js"></script>
 
 <script>
+  
     $(document).ready(function() {
         var rowsPerPage = 10;
         var rows = $("#reservation-table tbody tr");

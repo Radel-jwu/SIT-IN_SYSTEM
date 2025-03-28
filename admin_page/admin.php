@@ -387,8 +387,12 @@ function getTotalSitIn() {
         <label for="studentLab"><strong>Lab:</strong></label>
         <select id="studentLab" name ="student_lab" required>
           <option value="524">524</option>
+          <option value="526">526</option>
+          <option value="528">528</option>
           <option value="530">530</option>
           <option value="540">540</option>
+          <option value="542">542</option>
+
         </select>
       </div>
       <div class="form-group">

@@ -11,8 +11,9 @@ if (!isset($_SESSION['user_id'])) {
 function getStudentRecords() {
   global $conn;
   $sql = "SELECT studentinfo.idno, studentinfo.year_lvl, studentinfo.course, studentinfo.lastname, reservations.remaining_sessions 
-          FROM studentinfo 
-          LEFT JOIN reservations ON studentinfo.idno = reservations.idno";
+  FROM studentinfo 
+  LEFT JOIN reservations ON studentinfo.idno = reservations.idno 
+  WHERE studentinfo.idno != 1;";
   $result = $conn->query($sql);
   $students = [];
   

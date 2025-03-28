@@ -8,7 +8,7 @@ if (isset($_SESSION['user_id'])) {
     $logout_time = date('h:i A'); // Format logout time as 9:45 PM or AM
 
     // Update the latest log entry where idno matches the user ID and log_id is the most recent
-    $update_stmt = $conn->prepare("UPDATE user_logs SET Logout = ? WHERE idno = ? ORDER BY log_id DESC LIMIT 1");
+    $update_stmt = $conn->prepare("UPDATE user_logs SET logout = ? WHERE idno = ? ORDER BY idno DESC LIMIT 1");
     if ($update_stmt) {
         $update_stmt->bind_param("si", $logout_time, $user_id);
         $update_stmt->execute();
